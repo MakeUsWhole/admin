@@ -1,0 +1,88 @@
+
+Install Docker on Ubuntu 18.04
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sudo apt update
+sudo apt install apt-transport-https
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt update
+sudo apt install docker-ce
+sudo systemctl status docker
+
+sudo usermod -aG docker $USER   - Добавляет текущего пользователя в группу докер , для того ,чтобы не писать постоянно sudo перед командами докера
+>>>logout/login<<< - переподключаемся и можем спокойно рабоатть с докером
+
+
+docker run hello-world
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+docker ps
+docker ps -a
+docker images
+
+
+docker search tomcat
+docker pull tomcat
+docker run -it -p 1234:8080 tomcat
+docker run -it -p 8888:80 nginx
+docker run -d -p 8888:80 nginx
+
+
+
+docker build -t denis .
+docker images
+
+docker run -it  -p 1234:80  denis:latest
+docker run -d -p  1234:80  denis:latest
+
+docker  ps     # list containers
+docker  ps -a  # list all containers
+
+docker tag denis_ubuntu denis_ubuntu-PROD
+docker tag denis_ubuntu denis_ubuntu-PROD:v2
+
+docker rm   # delete container
+docker rmi  # delete image
+
+UPDATE IMAGE
+~~~~~~~~~~~~~
+docker run -d -p 7777:80 denis_ubuntu4
+docker exec -it 5267e21d140 /bin/bash
+echo "V2" >> /var/www/html/index.html
+exit
+docker commit 5267e21d140 denis_v2:latest
+
+Export/Import Docker Image to file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+docker save image:tag > arch_name.tar
+docker load -i arch_name.tar
+
+
+Import/Export Docker Image to AWS ECR
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+docker build -t denis:v1 .
+aws ecr get-login --no-include-email --region=ca-central-1 
+docker tag  denis:v1  12345678.dkr.ecr.ca-central-1.amazonaws.com/myrepo:latest
+docker push 12345678.dkr.ecr.ca-central-1.amazonaws.com/myrepo:lastest
+
+docker pull 12345678.dkr.ecr.ca-central-1.amazonaws.com/myrepo:latest
+
+docker run -it --name Ubuntu1804 ubuntu:18.04 /bin/bash
+
+Kill and Delete Containers and Images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+docker rm -f $(docker ps -aq)        # Delete all Containers
+docker rmi -f $(docker images -q)    # Delete all Images
+
+
+Сети в Docker
+Помимо различных сторонних сетевых драйверов, у самого Docker-а есть 4 встроенных:
+
+
+Bridge: в этой сети контейнеры запускаются по умолчанию. Связь устанавливается через bridge-интерфейс на хосте. У контейнеров, которые используют одинаковую сеть, есть своя собственная подсеть, и они могут передавать данные друг другу по умолчанию.
+Host: этот драйвер дает контейнеру доступ к собственному пространству хоста (контейнер будет видеть и использовать тот же интерфейс, что и хост).
+Macvlan: этот драйвер дает контейнерам прямой доступ к интерфейсу и суб-интерфейсу (vlan) хоста. Также он разрешает транкинг.
+Overlay: этот драйвер позволяет строить сети на нескольких хостах с Docker (обычно на Docker Swarm кластере). У контейнеров также есть свои адреса сети и подсети, и они могут напрямую обмениваться данными, даже если они располагаются физически на разных хостах.
+
+docker build -f Dockerfile2 -t srv1c2 .
